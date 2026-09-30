@@ -95,3 +95,97 @@ select { background: var(--input-bg); color: var(--text-color); border: 1px soli
 /* Toasts */
 #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
 .toast { background: var(--navbar-bg); color: var(--navbar-text); padding: 10px 18px; border-radius: 6px; margin-top: 8px; font-size: 0.9rem; border: 1px solid var(--card-border); }
+
+/* ==========================================
+   RESPONSIVE LAYOUT FOR MOBILE & TABLETS
+   ========================================== */
+
+/* Tablets & Mobile Screens (768px se chhote screens ke liye) */
+@media (max-width: 768px) {
+  /* Layout grid ko single column banana */
+  .main-content, 
+  .container, 
+  .app-layout {
+    flex-direction: column !important;
+    padding: 10px !important;
+  }
+
+  /* Filters section ko full width karna */
+  .sidebar, 
+  .filters-sidebar {
+    width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Top Navbar ko responsive banana */
+  header, 
+  .navbar {
+    flex-direction: column !important;
+    gap: 10px !important;
+    text-align: center !important;
+    padding: 15px 10px !important;
+  }
+
+  /* Search bar mobile par full width */
+  .search-container, 
+  input[type="text"] {
+    width: 100% !important;
+  }
+
+  /* Products Grid ko Mobile responsive banana */
+  .product-grid, 
+  #product-list {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  /* Product Card Text and Padding Adjustment */
+  .product-card {
+    padding: 10px !important;
+  }
+
+  .product-card img {
+    height: 140px !important;
+    object-fit: contain !important;
+  }
+
+  .card-title {
+    font-size: 0.95rem !important;
+  }
+
+  .card-price {
+    font-size: 0.9rem !important;
+  }
+
+  /* Cart Drawer ko Mobile full screen banana */
+  .cart-drawer {
+    width: 100% !important;
+    right: -100% !important;
+  }
+
+  .cart-drawer.open {
+    right: 0 !important;
+  }
+}
+
+/* Small Mobile Screens (480px se chhote screens ke liye) */
+@media (max-width: 480px) {
+  .product-grid, 
+  #product-list {
+    grid-template-columns: repeat(2, 1fr) !important; /* Mobile par 2 cards ek row mein */
+    gap: 8px !important;
+  }
+
+  /* Filter category buttons wrap hone lagein */
+  .category-chips, 
+  .filter-options {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .chip {
+    padding: 5px 10px !important;
+    font-size: 0.8rem !important;
+  }
+}
