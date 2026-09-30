@@ -1,4 +1,4 @@
-// 12 Products Array
+// 12 Default Products Array
 const defaultProducts = [
   { id: 1, name: "Wireless Headphones", category: "Electronics", price: 89.99, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500", description: "High-fidelity Bluetooth wireless headphones with noise cancellation." },
   { id: 2, name: "Smart Fitness Watch", category: "Electronics", price: 129.50, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500", description: "Track your heart rate, steps, and daily fitness activities." },
@@ -14,50 +14,49 @@ const defaultProducts = [
   { id: 12, name: "Canvas High-Top Sneakers", category: "Footwear", price: 68.00, image: "https://images.unsplash.com/photo-1607522370275-f14206abe5d3?w=500", description: "Trendy classic casual canvas shoes for daily wear." }
 ];
 
-let rawProducts = [];
-let filteredProducts = [];
+let rawProducts = defaultProducts;
+let filteredProducts = defaultProducts;
 let cart = [];
 let currentUser = JSON.parse(localStorage.getItem('user')) || null;
 let selectedCategory = 'all';
 
-// Initialize App
+let currentPage = 1;
+const itemsPerPage = 8;
+
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   updateUserUI();
-  fetchProducts();
+  // Direct render default products immediately
+  applyFilters();
 });
 
-// --- Theme Switcher Logic ---
 function initTheme() {
   const savedTheme = localStorage.getItem('theme') || 'light';
   if (savedTheme === 'dark') {
     document.body.classList.add('dark-theme');
-    document.getElementById('theme-btn').innerText = '☀️ Light';
-  } else {
-    document.body.classList.remove('dark-theme');
-    document.getElementById('theme-btn').innerText = '🌙 Dark';
+    const btn = document.getElementById('theme-btn');
+    if (btn) btn.innerText = '☀️ Light';
   }
 }
 
 function toggleTheme() {
   const isDark = document.body.classList.toggle('dark-theme');
-  const themeBtn = document.getElementById('theme-btn');
-
+  const btn = document.getElementById('theme-btn');
   if (isDark) {
     localStorage.setItem('theme', 'dark');
-    themeBtn.innerText = '☀️ Light';
+    if (btn) btn.innerText = '☀️ Light';
     showToast('Dark Mode Enabled');
   } else {
     localStorage.setItem('theme', 'light');
-    themeBtn.innerText = '🌙 Dark';
+    if (btn) btn.innerText = '🌙 Dark';
     showToast('Light Mode Enabled');
   }
 }
 
-// Update User Header Display
 function updateUserUI() {
   const display = document.getElementById('user-display');
   const authBtn = document.getElementById('auth-btn-text');
+  if (!display || !authBtn) return;
 
   if (currentUser) {
     display.innerText = `👤 ${currentUser.name}`;
@@ -70,35 +69,25 @@ function updateUserUI() {
   }
 }
 
-// Fetch products from backend or fallback
-async function fetchProducts() {
-  try {
-    const res = await fetch('/api/products');
-    if (res.ok) {
-      const data = await res.json();
-      rawProducts = data.length > 0 ? data : defaultProducts;
-    } else {
-      rawProducts = defaultProducts;
-    }
-  } catch (err) {
-    rawProducts = defaultProducts;
-  }
-  applyFilters();
-}
-
-// Render Products Grid
 function renderProducts(products) {
   const container = document.getElementById('product-list');
   const countTitle = document.getElementById('results-count');
-  countTitle.innerText = `Showing ${products.length} Products`;
+  if (!container) return;
+
+  if (countTitle) countTitle.innerText = `Showing ${products.length} Products`;
   container.innerHTML = '';
 
-  if (products.length === 0) {
+  if (!products || products.length === 0) {
     container.innerHTML = '<p>No products match your filters.</p>';
+    renderPaginationControls(0);
     return;
   }
 
-  products.forEach(p => {
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  const pageItems = products.slice(start, end);
+
+  pageItems.forEach(p => {
     container.innerHTML += `
       <div class="product-card">
         <div>
@@ -113,13 +102,38 @@ function renderProducts(products) {
       </div>
     `;
   });
+
+  renderPaginationControls(products.length);
 }
 
-// Filters & Sorting
+function renderPaginationControls(totalItems) {
+  const container = document.getElementById('pagination-controls');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  if (totalPages <= 1) return;
+
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement('button');
+    btn.innerText = i;
+    btn.className = (i === currentPage) ? 'chip active' : 'chip';
+    btn.onclick = () => {
+      currentPage = i;
+      renderProducts(filteredProducts);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    container.appendChild(btn);
+  }
+}
+
 function applyFilters() {
-  const searchValue = document.getElementById('search-input').value.toLowerCase();
-  const maxPrice = parseFloat(document.getElementById('price-range').value);
-  const sortOption = document.getElementById('sort-select').value;
+  const searchInput = document.getElementById('search-input');
+  const searchValue = searchInput ? searchInput.value.toLowerCase() : '';
+  const priceRange = document.getElementById('price-range');
+  const maxPrice = priceRange ? parseFloat(priceRange.value) : 1500;
+  const sortSelect = document.getElementById('sort-select');
+  const sortOption = sortSelect ? sortSelect.value : 'default';
 
   filteredProducts = rawProducts.filter(p => {
     const matchesCategory = (selectedCategory === 'all' || p.category === selectedCategory);
@@ -134,21 +148,22 @@ function applyFilters() {
     filteredProducts.sort((a, b) => b.price - a.price);
   }
 
+  currentPage = 1;
   renderProducts(filteredProducts);
 }
 
 function filterByCategory(category, element) {
   selectedCategory = category;
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  element.classList.add('active');
+  if (element) element.classList.add('active');
   applyFilters();
 }
 
 function updatePriceLabel(val) {
-  document.getElementById('price-val').innerText = val;
+  const label = document.getElementById('price-val');
+  if (label) label.innerText = val;
 }
 
-// Product Quick View Modal
 function openProductModal(id) {
   const p = rawProducts.find(item => item.id == id);
   if (!p) return;
@@ -176,66 +191,46 @@ function closeProductModalDirect() {
   document.getElementById('product-modal').style.display = 'none';
 }
 
-// User Authentication
-async function register() {
+function register() {
   const name = document.getElementById('auth-name').value;
   const email = document.getElementById('auth-email').value;
   const password = document.getElementById('auth-pass').value;
 
-  if (!email || !password || !name) return showToast('Please enter Name, Email, and Password!');
+  if (!email || !password || !name) return showToast('Please fill all fields!');
 
-  try {
-    const res = await fetch('/api/users/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password })
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      showToast('Registered successfully! Now click Login.');
-    } else {
-      showToast(data.message || 'Registration failed.');
-    }
-  } catch (err) {
-    currentUser = { id: Date.now(), name, email };
-    localStorage.setItem('user', JSON.stringify(currentUser));
-    updateUserUI();
-    toggleAuthModal();
-    showToast(`Welcome ${name}! (Registered offline)`);
+  let users = JSON.parse(localStorage.getItem('registered_users')) || [];
+  if (users.some(u => u.email === email)) {
+    return showToast('Email already registered!');
   }
+
+  const newUser = { id: Date.now(), name, email, password };
+  users.push(newUser);
+  localStorage.setItem('registered_users', JSON.stringify(users));
+
+  currentUser = newUser;
+  localStorage.setItem('user', JSON.stringify(currentUser));
+  updateUserUI();
+  toggleAuthModal();
+  showToast(`Welcome ${name}! Account created.`);
 }
 
-async function login() {
+function login() {
   const email = document.getElementById('auth-email').value;
   const password = document.getElementById('auth-pass').value;
 
   if (!email || !password) return showToast('Please enter Email & Password!');
 
-  try {
-    const res = await fetch('/api/users/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
+  let users = JSON.parse(localStorage.getItem('registered_users')) || [];
+  const foundUser = users.find(u => u.email === email && u.password === password);
 
-    const data = await res.json();
-    if (res.ok) {
-      currentUser = data.user;
-      localStorage.setItem('user', JSON.stringify(currentUser));
-      updateUserUI();
-      toggleAuthModal();
-      showToast(`Logged in as ${currentUser.name}`);
-    } else {
-      showToast(data.message || 'Login failed.');
-    }
-  } catch (err) {
-    const nameFromEmail = email.split('@')[0];
-    currentUser = { id: Date.now(), name: nameFromEmail, email };
+  if (foundUser) {
+    currentUser = foundUser;
     localStorage.setItem('user', JSON.stringify(currentUser));
     updateUserUI();
     toggleAuthModal();
-    showToast(`Logged in as ${nameFromEmail}`);
+    showToast(`Welcome back, ${foundUser.name}!`);
+  } else {
+    showToast('Invalid Email or Password!');
   }
 }
 
@@ -243,15 +238,14 @@ function logout() {
   currentUser = null;
   localStorage.removeItem('user');
   updateUserUI();
-  showToast('Logged out successfully!');
+  showToast('Logged out!');
 }
 
 function toggleAuthModal() {
   const modal = document.getElementById('auth-modal');
-  modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+  if (modal) modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
 }
 
-// Cart Drawer Logic
 function addToCart(id) {
   const product = rawProducts.find(p => p.id == id);
   const existing = cart.find(item => item.id == id);
@@ -271,6 +265,7 @@ function updateCartDrawer() {
   const countBadge = document.getElementById('cart-count');
   const totalDisplay = document.getElementById('cart-total-price');
 
+  if (!itemsDiv) return;
   itemsDiv.innerHTML = '';
   let total = 0;
   let totalQty = 0;
@@ -292,8 +287,8 @@ function updateCartDrawer() {
     `;
   });
 
-  countBadge.innerText = totalQty;
-  totalDisplay.innerText = `$${total.toFixed(2)}`;
+  if (countBadge) countBadge.innerText = totalQty;
+  if (totalDisplay) totalDisplay.innerText = `$${total.toFixed(2)}`;
 }
 
 function changeQty(index, delta) {
@@ -303,12 +298,13 @@ function changeQty(index, delta) {
 }
 
 function toggleCartDrawer() {
-  document.getElementById('cart-drawer').classList.toggle('open');
+  const drawer = document.getElementById('cart-drawer');
+  if (drawer) drawer.classList.toggle('open');
 }
 
-// Toast Notifications
 function showToast(msg) {
   const container = document.getElementById('toast-container');
+  if (!container) return;
   const toast = document.createElement('div');
   toast.className = 'toast';
   toast.innerText = msg;
@@ -316,8 +312,7 @@ function showToast(msg) {
   setTimeout(() => toast.remove(), 2500);
 }
 
-// Checkout Function
-async function checkout() {
+function checkout() {
   if (!currentUser) {
     toggleAuthModal();
     return showToast('Please login first to place order!');
@@ -326,16 +321,6 @@ async function checkout() {
 
   const address = document.getElementById('shipping-address').value;
   if (!address) return showToast('Please enter shipping address!');
-
-  const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-
-  try {
-    await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: currentUser.id, items: cart, totalAmount, shippingAddress: address })
-    });
-  } catch (e) {}
 
   showToast('🎉 Order Placed Successfully!');
   cart = [];
