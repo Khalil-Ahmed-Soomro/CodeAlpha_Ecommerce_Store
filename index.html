@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StoreFront - E-Commerce App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="logo">🛍️ StoreFront</div>
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search products..." oninput="applyFilters()">
+    </div>
+    <div class="user-cart-controls">
+      <a href="/admin.html" style="color:white; text-decoration:none; font-weight:600; margin-right:5px;">⚡ Admin</a>
+      <button onclick="toggleTheme()" class="theme-toggle-btn" id="theme-btn">🌙 Dark</button>
+      <span id="user-display">Guest</span>
+      <button onclick="toggleAuthModal()" class="btn-auth" id="auth-btn-text">Login / Register</button>
+      <button onclick="toggleCartDrawer()" class="cart-badge-btn">
+        🛒 Cart (<span id="cart-count">0</span>)
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="app-layout">
+    
+    <!-- Sidebar Filters -->
+    <aside class="sidebar">
+      <h3>Filters</h3>
+      
+      <div class="filter-group">
+        <h4>Category</h4>
+        <div id="category-chips" class="chip-container">
+          <button class="chip active" onclick="filterByCategory('all', this)">All</button>
+          <button class="chip" onclick="filterByCategory('Electronics', this)">Electronics</button>
+          <button class="chip" onclick="filterByCategory('Fashion', this)">Fashion</button>
+          <button class="chip" onclick="filterByCategory('Footwear', this)">Footwear</button>
+          <button class="chip" onclick="filterByCategory('Accessories', this)">Accessories</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <h4>Max Price: $<span id="price-val">1500</span></h4>
+        <input type="range" id="price-range" min="0" max="1500" step="20" value="1500" oninput="updatePriceLabel(this.value); applyFilters();">
+      </div>
+
+      <div class="filter-group">
+        <h4>Sort By</h4>
+        <select id="sort-select" onchange="applyFilters()">
+          <option value="default">Featured</option>
+          <option value="low-high">Price: Low to High</option>
+          <option value="high-low">Price: High to Low</option>
+        </select>
+      </div>
+    </aside>
+
+    <!-- Main Products Area -->
+    <main class="content-area">
+      <div class="results-header">
+        <h2 id="results-count">Showing Products</h2>
+      </div>
+      <div id="product-list" class="products-grid"></div>
+      
+      <!-- Pagination Controls Container -->
+      <div id="pagination-controls" style="display:flex; justify-content:center; gap:8px; margin-top:30px;"></div>
+    </main>
+
+  </div>
+
+  <!-- Product Detail Modal -->
+  <div id="product-modal" class="modal-overlay" onclick="closeProductModal(event)">
+    <div class="modal-card">
+      <button class="close-btn" onclick="closeProductModalDirect()">&times;</button>
+      <div class="modal-body" id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div id="cart-drawer" class="drawer">
+    <div class="drawer-header">
+      <h3>Your Cart</h3>
+      <button onclick="toggleCartDrawer()">&times;</button>
+    </div>
+    <div id="cart-drawer-items" class="drawer-body"></div>
+    <div class="drawer-footer">
+      <div class="total-row">
+        <span>Total:</span>
+        <span id="cart-total-price">$0.00</span>
+      </div>
+      <input type="text" id="shipping-address" placeholder="Enter Full Shipping Address">
+      <button onclick="checkout()" class="btn-checkout-full">Checkout Now</button>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div id="auth-modal" class="modal-overlay">
+    <div class="modal-card auth-card">
+      <button class="close-btn" onclick="toggleAuthModal()">&times;</button>
+      <h3>Account Access</h3>
+      <div class="auth-form">
+        <input type="text" id="auth-name" placeholder="Full Name (For Registration)">
+        <input type="email" id="auth-email" placeholder="Email Address">
+        <input type="password" id="auth-pass" placeholder="Password">
+        <div class="auth-btn-group">
+          <button onclick="login()" class="btn-login">Login</button>
+          <button onclick="register()" class="btn-register">Register</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - StoreFront</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .metric-card { background: var(--card-bg, #fff); border: 1px solid var(--card-border, #cbd5e1); padding: 20px; border-radius: 10px; text-align: center; }
+    .metric-card h3 { font-size: 2rem; color: #2563eb; margin-top: 10px; }
+    .admin-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+    .form-card { background: var(--card-bg, #fff); border: 1px solid var(--card-border, #cbd5e1); padding: 20px; border-radius: 10px; height: fit-content; }
+    .form-card input, .form-card select, .form-card textarea { width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid var(--input-border, #cbd5e1); background: var(--input-bg, #fff); color: var(--text-color, #000); border-radius: 6px; box-sizing: border-box; }
+    .table-card { background: var(--card-bg, #fff); border: 1px solid var(--card-border, #cbd5e1); padding: 20px; border-radius: 10px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 12px; border-bottom: 1px solid var(--card-border, #e2e8f0); }
+    .btn-delete { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+    .btn-edit { background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+    @media (max-width: 768px) { .admin-actions { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="logo">⚡ Admin Dashboard</div>
+    <div class="user-cart-controls">
+      <a href="/" style="color:white; text-decoration:none; margin-right: 15px; font-weight:600;">← Back to Store</a>
+      <button onclick="toggleTheme()" class="theme-toggle-btn" id="theme-btn">🌙 Dark</button>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    
+    <!-- Analytics Metrics -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <h4>Total Products</h4>
+        <h3 id="stat-products">0</h3>
+      </div>
+      <div class="metric-card">
+        <h4>Total Orders</h4>
+        <h3 id="stat-orders">12</h3>
+      </div>
+      <div class="metric-card">
+        <h4>Total Revenue</h4>
+        <h3 id="stat-revenue">$1,850.00</h3>
+      </div>
+    </div>
+
+    <!-- Main Admin Grid -->
+    <div class="admin-actions">
+      
+      <!-- Product Form -->
+      <div class="form-card">
+        <h3 id="form-title" style="margin-bottom: 15px;">Add New Product</h3>
+        <form id="product-form" onsubmit="handleProductSubmit(event)">
+          <input type="hidden" id="p-id">
+          <input type="text" id="p-name" placeholder="Product Name" required>
+          <select id="p-category" required>
+            <option value="">Select Category</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Footwear">Footwear</option>
+            <option value="Accessories">Accessories</option>
+          </select>
+          <input type="number" step="0.01" id="p-price" placeholder="Price ($)" required>
+          <input type="url" id="p-image" placeholder="Image URL (Unsplash/CDN)" required>
+          <textarea id="p-desc" placeholder="Product Description" rows="3"></textarea>
+          <button type="submit" class="add-btn" style="width:100%;">Save Product</button>
+        </form>
+      </div>
+
+      <!-- Inventory Table -->
+      <div class="table-card">
+        <h3>Inventory List</h3>
+        <br>
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-product-table"></tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="app.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
